@@ -1,0 +1,277 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora IA</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #111, #252525);
+            padding: 20px;
+        }
+
+        .calculadora {
+            width: 360px;
+            max-width: 100%;
+            padding: 20px;
+            border-radius: 25px;
+            background: #181818;
+            box-shadow: 0 0 35px rgba(255, 0, 100, 0.25);
+        }
+
+        .titulo {
+            color: #ff4f91;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .subtitulo {
+            color: white;
+            font-size: 14px;
+            margin: 12px 0 8px;
+        }
+
+        .pantalla {
+            width: 100%;
+            min-height: 75px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 15px;
+            background: #080808;
+            color: white;
+            text-align: right;
+            font-size: 30px;
+            overflow-wrap: break-word;
+        }
+
+        .botones {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        button {
+            min-height: 55px;
+            border: none;
+            border-radius: 12px;
+            font-size: 20px;
+            cursor: pointer;
+            background: #292929;
+            color: white;
+        }
+
+        button:hover {
+            background: #3d3d3d;
+        }
+
+        .operador {
+            background: #ff4f91;
+        }
+
+        .igual {
+            background: #e91e63;
+        }
+
+        .pregunta {
+            width: 100%;
+            padding: 13px;
+            border: 2px solid #ff4f91;
+            border-radius: 12px;
+            background: #080808;
+            color: white;
+            font-size: 16px;
+            outline: none;
+        }
+
+        .pregunta::placeholder {
+            color: #999;
+        }
+
+        .chatgpt {
+            width: 100%;
+            margin-top: 10px;
+            background: #333;
+            color: #7cffb2;
+            font-size: 16px;
+        }
+
+        .respuesta {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 12px;
+            background: #101010;
+            color: #ddd;
+            min-height: 55px;
+            font-size: 15px;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            overflow-wrap: break-word;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="calculadora">
+
+    <h2 class="titulo">CALCULADORA IA</h2>
+
+    <div id="pantalla" class="pantalla">0</div>
+
+    <div class="botones">
+
+        <button onclick="limpiar()">C</button>
+        <button onclick="borrar()">⌫</button>
+        <button onclick="agregar('(')">(</button>
+        <button onclick="agregar(')')">)</button>
+
+        <button onclick="agregar('7')">7</button>
+        <button onclick="agregar('8')">8</button>
+        <button onclick="agregar('9')">9</button>
+        <button class="operador" onclick="agregar('/')">÷</button>
+
+        <button onclick="agregar('4')">4</button>
+        <button onclick="agregar('5')">5</button>
+        <button onclick="agregar('6')">6</button>
+        <button class="operador" onclick="agregar('*')">×</button>
+
+        <button onclick="agregar('1')">1</button>
+        <button onclick="agregar('2')">2</button>
+        <button onclick="agregar('3')">3</button>
+        <button class="operador" onclick="agregar('-')">−</button>
+
+        <button onclick="agregar('0')">0</button>
+        <button onclick="agregar('.')">.</button>
+        <button class="igual" onclick="calcular()">=</button>
+        <button class="operador" onclick="agregar('+')">+</button>
+
+    </div>
+
+    <p class="subtitulo">🤖 PREGÚNTALE A CHATGPT</p>
+
+    <input
+        type="text"
+        id="pregunta"
+        class="pregunta"
+        placeholder="Escribe cualquier pregunta..."
+        onkeydown="if(event.key === 'Enter') preguntarIA()"
+    >
+
+    <button class="chatgpt" onclick="preguntarIA()">
+        Enviar pregunta
+    </button>
+
+    <div id="respuesta" class="respuesta">
+        Aquí aparecerán las respuestas de ChatGPT.
+    </div>
+
+</div>
+
+<script>
+
+let pantalla = document.getElementById("pantalla");
+
+function agregar(valor) {
+    if (pantalla.innerText === "0") {
+        pantalla.innerText = valor;
+    } else {
+        pantalla.innerText += valor;
+    }
+}
+
+function limpiar() {
+    pantalla.innerText = "0";
+}
+
+function borrar() {
+    let texto = pantalla.innerText;
+
+    if (texto.length <= 1) {
+        pantalla.innerText = "0";
+    } else {
+        pantalla.innerText = texto.slice(0, -1);
+    }
+}
+
+function calcular() {
+    try {
+        let expresion = pantalla.innerText;
+
+        if (!/^[0-9+\-*/().\s]+$/.test(expresion)) {
+            throw new Error("Operación no válida");
+        }
+
+        let resultado = Function(
+            '"use strict"; return (' + expresion + ')'
+        )();
+
+        if (!Number.isFinite(resultado)) {
+            throw new Error("Resultado no válido");
+        }
+
+        pantalla.innerText = resultado;
+
+    } catch {
+        pantalla.innerText = "Error";
+    }
+}
+
+async function preguntarIA() {
+
+    let pregunta = document.getElementById("pregunta").value.trim();
+
+    let respuestaElemento = document.getElementById("respuesta");
+
+    if (pregunta === "") {
+        respuestaElemento.innerText =
+            "Primero escribe una pregunta.";
+        return;
+    }
+
+    respuestaElemento.innerText = "🤖 Pensando...";
+
+    try {
+
+        let respuesta = await fetch("/ask", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                question: pregunta
+            })
+        });
+
+        let datos = await respuesta.json();
+
+        if (respuesta.ok && datos.answer) {
+            respuestaElemento.innerText = datos.answer;
+        } else {
+            respuestaElemento.innerText =
+                "Error: " + (datos.error || "No se pudo obtener la respuesta.");
+        }
+
+    } catch (error) {
+
+        respuestaElemento.innerText =
+            "No se pudo conectar con el servidor.";
+
+    }
+}
+
+</script>
+
+</body>
+</html>
